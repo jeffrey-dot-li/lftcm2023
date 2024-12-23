@@ -7,10 +7,16 @@ example (a b c : ℝ) : a * b * c = b * (a * c) := by
 
 -- Try these.
 example (a b c : ℝ) : c * b * a = b * (a * c) := by
-  sorry
+  rw [mul_comm c b]
+  rw [mul_assoc b c a]
+  rw [mul_comm c a]
+
 
 example (a b c : ℝ) : a * (b * c) = b * (a * c) := by
-  sorry
+  rw [← mul_assoc a b c]
+  rw [mul_comm a b]
+  rw [mul_assoc b a c]
+
 
 -- An example.
 example (a b c : ℝ) : a * b * c = b * c * a := by
@@ -20,10 +26,15 @@ example (a b c : ℝ) : a * b * c = b * c * a := by
 /- Try doing the first of these without providing any arguments at all,
    and the second with only one argument. -/
 example (a b c : ℝ) : a * (b * c) = b * (c * a) := by
-  sorry
+  rw [mul_comm]
+  rw [← mul_assoc]
+
+
 
 example (a b c : ℝ) : a * (b * c) = b * (a * c) := by
-  sorry
+  rw [mul_comm]
+  rw [mul_assoc]
+  rw [mul_comm c]
 
 -- Using facts from the local context.
 example (a b c d e f : ℝ) (h : a * b = c * d) (h' : e = f) : a * (b * e) = c * (d * f) := by
@@ -33,7 +44,11 @@ example (a b c d e f : ℝ) (h : a * b = c * d) (h' : e = f) : a * (b * e) = c *
   rw [mul_assoc]
 
 example (a b c d e f : ℝ) (h : b * c = e * f) : a * b * c * d = a * e * f * d := by
-  sorry
+  rw [mul_comm]
+  rw [mul_assoc, h]
+  ring
+  -- rw [← mul_assoc a]
+  -- rw [mul_comm]
 
 example (a b c d : ℝ) (hyp : c = b * a - d) (hyp' : d = a * b) : c = 0 := by
   sorry
@@ -97,10 +112,34 @@ section
 variable (a b c d : ℝ)
 
 example : (a + b) * (c + d) = a * c + a * d + b * c + b * d := by
-  sorry
+  ring
+
+-- theorem false: 1 + 1 = 3 := by sorry
 
 example (a b : ℝ) : (a + b) * (a - b) = a ^ 2 - b ^ 2 := by
-  sorry
+-- ring
+  rw [add_mul]
+  repeat rw [mul_sub]
+  repeat rw [← pow_two]
+  rw [add_sub]
+  rw [mul_comm b a]
+  rw [sub_eq_add_neg (a ^2)]
+  rw [add_assoc, add_comm (-(a*b))]
+  -- rw [SubtractionMonoid.neg_eq_of_add (a*b)]
+  rw [add_neg_self]
+  rw [add_zero]
+
+
+
+
+
+  -- rw [neg_mul a b]
+  -- rw [← add_assoc (a^2 - a*b)]
+
+
+
+
+
 
 #check pow_two a
 #check mul_sub a b c

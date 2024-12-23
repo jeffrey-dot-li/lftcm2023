@@ -33,24 +33,65 @@ variable (x y z : α)
 #check (le_sup_right : y ≤ x ⊔ y)
 #check (sup_le : x ≤ z → y ≤ z → x ⊔ y ≤ z)
 
-example : x ⊓ y = y ⊓ x := by
-  sorry
+theorem inf_symm : x ⊓ y = y ⊓ x := by
+  apply le_antisymm
+  · apply le_inf
+    · apply inf_le_right
+    · apply inf_le_left
+  · apply le_inf
+    · apply inf_le_right
+    · apply inf_le_left
+
+
 
 example : x ⊓ y ⊓ z = x ⊓ (y ⊓ z) := by
-  sorry
+  apply le_antisymm
+  · apply le_inf
+    · apply le_trans
+      repeat apply inf_le_left
+    · apply le_inf
+      · apply le_trans
+        apply inf_le_left
+        apply inf_le_right
+      · apply inf_le_right
+  · apply le_inf
+    · apply le_inf
+      · apply inf_le_left
+      · apply le_trans
+        apply inf_le_right
+        apply inf_le_left
+    · apply le_trans
+      repeat apply inf_le_right
+
+
 
 example : x ⊔ y = y ⊔ x := by
-  sorry
+  apply le_antisymm
+  · apply sup_le
+    · apply le_sup_right
+    · apply le_sup_left
+  · apply sup_le
+    · apply le_sup_right
+    · apply le_sup_left
 
 example : x ⊔ y ⊔ z = x ⊔ (y ⊔ z) := by
   sorry
 
 theorem absorb1 : x ⊓ (x ⊔ y) = x := by
-  sorry
+  apply le_antisymm
+  · apply inf_le_left
+  · apply le_inf
+    · apply le_refl
+    · apply le_sup_left
 
-theorem absorb2 : x ⊔ x ⊓ y = x := by
-  sorry
-
+theorem absorb2 : x ⊔ (x ⊓ y) = x := by
+  apply le_antisymm
+  · apply le_trans
+    · apply sup_le
+      apply le_refl
+      apply inf_le_left
+    apply le_refl
+  · apply le_sup_left
 end
 
 section
@@ -107,4 +148,3 @@ example (x y : X) : 0 ≤ dist x y := by
   sorry
 
 end
-

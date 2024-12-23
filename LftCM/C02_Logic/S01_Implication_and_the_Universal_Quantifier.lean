@@ -7,8 +7,44 @@ namespace C03S01
 
 #check ∀ x y ε : ℝ, 0 < ε → ε ≤ 1 → |x| < ε → |y| < ε → |x * y| < ε
 
-theorem my_lemma : ∀ x y ε : ℝ, 0 < ε → ε ≤ 1 → |x| < ε → |y| < ε → |x * y| < ε :=
-  sorry
+theorem my_lemma : ∀ x y ε : ℝ, 0 < ε → ε ≤ 1 → |x| < ε → |y| < ε → |x * y| < ε := by
+  intros x y ε h1 h2 h3 h4
+  rw [abs_mul]
+
+  if h₀ : |x| * |y| = 0
+  then
+    rw [h₀]
+    apply h1
+  else
+    have h₆: |x| ≠ 0 ∧ |y| ≠ 0 := by
+      exact not_or.mp (mt mul_eq_zero.mpr h₀)
+    have h₇ : |x| > 0 ∧ |y| > 0 := by
+      constructor
+      · exact (lt_iff_le_and_ne.mpr  ⟨(abs_nonneg x),  ( Ne.symm h₆.left)⟩)
+      · exact (lt_iff_le_and_ne.mpr  ⟨(abs_nonneg y),  ( Ne.symm h₆.right)⟩)
+    have h₈: |x| * |y| < |x| * ε := by
+      rw [mul_lt_mul_left]
+      exact h4
+      exact h₇.left
+    have h₉ : |x| < 1 := by
+      apply lt_of_lt_of_le
+      apply h3
+      apply h2
+    calc
+      |x| * |y| < |x| * ε := by apply h₈
+      |x| * ε < 1* ε := by
+        rw [mul_lt_mul_right]
+        apply h₉
+        apply h1
+      _ = ε := by ring
+
+
+
+
+
+
+
+
 
 section
 variable (a b δ : ℝ)
@@ -21,8 +57,9 @@ variable (ha : |a| < δ) (hb : |b| < δ)
 
 end
 
-theorem my_lemma2 : ∀ {x y ε : ℝ}, 0 < ε → ε ≤ 1 → |x| < ε → |y| < ε → |x * y| < ε :=
-  sorry
+theorem my_lemma2 : ∀ {x y ε : ℝ}, 0 < ε → ε ≤ 1 → |x| < ε → |y| < ε → |x * y| < ε := by
+  apply my_lemma
+
 
 section
 variable (a b δ : ℝ)
@@ -35,17 +72,18 @@ end
 
 theorem my_lemma3 :
     ∀ {x y ε : ℝ}, 0 < ε → ε ≤ 1 → |x| < ε → |y| < ε → |x * y| < ε := by
-  intro x y ε epos ele1 xlt ylt
-  sorry
+  -- intro x y ε epos ele1 xlt ylt
+  apply my_lemma
 
 theorem my_lemma4 :
     ∀ {x y ε : ℝ}, 0 < ε → ε ≤ 1 → |x| < ε → |y| < ε → |x * y| < ε := by
-  intro x y ε epos ele1 xlt ylt
-  calc
-    |x * y| = |x| * |y| := sorry
-    _ ≤ |x| * ε := sorry
-    _ < 1 * ε := sorry
-    _ = ε := sorry
+  -- intro x y ε epos ele1 xlt ylt
+  apply my_lemma
+  -- calc
+  --   |x * y| = |x| * |y| := sorry
+  --   _ ≤ |x| * ε := sorry
+  --   _ < 1 * ε := sorry
+  --   _ = ε := sorry
 
 def FnUb (f : ℝ → ℝ) (a : ℝ) : Prop :=
   ∀ x, f x ≤ a
@@ -63,16 +101,68 @@ example (hfa : FnUb f a) (hgb : FnUb g b) : FnUb (fun x ↦ f x + g x) (a + b) :
   apply hfa
   apply hgb
 
-example (hfa : FnLb f a) (hgb : FnLb g b) : FnLb (fun x ↦ f x + g x) (a + b) :=
-  sorry
+example (hfa : FnLb f a) (hgb : FnLb g b) : FnLb (fun x ↦ f x + g x) (a + b) := by
+  intro x
+  dsimp
+  apply add_le_add
+  apply hfa
+  apply hgb
 
-example (nnf : FnLb f 0) (nng : FnLb g 0) : FnLb (fun x ↦ f x * g x) 0 :=
-  sorry
+example (nnf : FnLb f 0) (nng : FnLb g 0) : FnLb (fun x ↦ f x * g x) 0 := by
+  intro x
+  dsimp
+  if h: (f x) = 0
+  then
+    rw[ h]
+    rw [zero_mul]
+  else
+    rw [← mul_zero (f x)]
+    rw [mul_le_mul_left]
+    apply nng
+    apply lt_iff_le_and_ne.mpr
+    constructor
+    · apply nnf
+    · apply Ne.symm h
+
+
+
 
 example (hfa : FnUb f a) (hgb : FnUb g b) (nng : FnLb g 0) (nna : 0 ≤ a) :
-    FnUb (fun x ↦ f x * g x) (a * b) :=
-  sorry
-
+    FnUb (fun x ↦ f x * g x) (a * b) := by
+  intro x
+  dsimp
+  have nnb: 0 <= b := by
+    apply le_trans
+    apply nng x
+    apply hgb
+  have nnab: 0 <= a * b := by
+    apply mul_nonneg nna nnb
+  if fzero: (f x) = 0
+  then
+    rw [fzero]
+    rw [zero_mul]
+    apply nnab
+  else if fneg: (f x) < 0
+    then
+      have h:  (g x)  * (f x) <= 0 := by
+        apply mul_nonpos_of_nonneg_of_nonpos
+        apply nng
+        apply le_iff_lt_or_eq.mpr
+        apply Or.inl fneg
+      rw [mul_comm]
+      apply le_trans
+      apply h
+      apply nnab
+  else
+    calc
+      (f x) * (g x) <= a * (g x) := by
+        apply mul_le_mul_of_nonneg_right
+        apply hfa
+        apply nng
+      _ <= a * b := by
+        apply mul_le_mul_of_nonneg_left
+        apply hgb
+        apply nna
 end
 
 section

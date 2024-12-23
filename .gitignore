@@ -12,6 +12,7 @@
 *.fls
 *.log
 *.synctex.gz
+.lake
 source/C01_Introduction
 source/C02_Basics
 source/C03_Logic

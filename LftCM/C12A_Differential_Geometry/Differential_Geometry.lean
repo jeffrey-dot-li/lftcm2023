@@ -50,8 +50,16 @@ open unitInterval
 
 /- the interval [0, 1] is modelled by two charts with model space [0, ∞),
 so it is a topological manifold -/
-example : ChartedSpace (EuclideanHalfSpace 1) I := by
-  infer_instance
+example : ChartedSpace (EuclideanHalfSpace 1) I := {
+  chartAt :=  λ x => if x = 1 then IccLeftChart 0 1 else IccRightChart 0 1,
+  atlas := {
+
+    },
+    mem_chart_source := by infer_instance,
+
+
+}
+
 
 /- To state that it is a smooth manifold, we have to say that all coordinate changes
 live in the groupoid of smooth maps -/
@@ -313,9 +321,9 @@ def myFirstLocalHomeo : LocalHomeomorph ℝ ℝ where
   continuous_invFun := sorry
 /- Two simple lemmas that will prove useful below. You can leave them sorried if you like. -/
 
-lemma ne_3_of_mem_Ioo {x : ℝ} (h : x ∈ Ioo (-1 : ℝ) 1) : x ≠ 3 := by
+lemma ne_3_of_mem_Ioo {x : ℝ} (h : x ∈ Ioo (-1 : ℝ) 1) : x ≠ 3 := by sorry
 
-lemma neg_ne_3_of_mem_Ioo {x : ℝ} (h : x ∈ Ioo (-1 : ℝ) 1) : -x ≠ 3 := by
+lemma neg_ne_3_of_mem_Ioo {x : ℝ} (h : x ∈ Ioo (-1 : ℝ) 1) : -x ≠ 3 := by sorry
 
 /- Now, define a second local homeomorphism which is almost like the previous one.  You may find the
 following lemma useful for `continuous_toFun`: -/

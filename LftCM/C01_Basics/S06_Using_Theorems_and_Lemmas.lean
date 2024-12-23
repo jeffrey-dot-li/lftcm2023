@@ -44,7 +44,13 @@ example (x : ℝ) : x ≤ x :=
 
 -- Try this.
 example (h₀ : a ≤ b) (h₁ : b < c) (h₂ : c ≤ d) (h₃ : d < e) : a < e := by
-  sorry
+  apply lt_of_le_of_lt _ h₃
+  apply le_trans _ h₂
+  apply le_trans h₀
+  apply le_iff_lt_or_eq.mpr (Or.inl h₁)
+
+  -- apply h₂
+
 
 example (h₀ : a ≤ b) (h₁ : b < c) (h₂ : c ≤ d) (h₃ : d < e) : a < e := by
   linarith
@@ -77,8 +83,7 @@ example (h : 1 ≤ a) (h' : b ≤ c) : 2 + a + exp b ≤ 3 * a + exp c := by
 #check add_le_add_left
 
 example (h : a ≤ b) : exp a ≤ exp b := by
-  rw [exp_le_exp]
-  exact h
+  apply exp_le_exp.mpr h
 
 example (h₀ : a ≤ b) (h₁ : c < d) : a + exp c + e < b + exp d + e := by
   apply add_lt_add_of_lt_of_le
@@ -88,20 +93,20 @@ example (h₀ : a ≤ b) (h₁ : c < d) : a + exp c + e < b + exp d + e := by
 
 example (h₀ : d ≤ e) : c + exp (a + d) ≤ c + exp (a + e) := by sorry
 
-example : (0 : ℝ) < 1 := by norm_num
+example : (0 : ℝ) < 1 := by linarith
 
 example (h : a ≤ b) : log (1 + exp a) ≤ log (1 + exp b) := by
-  have h₀ : 0 < 1 + exp a := by sorry
-  have h₁ : 0 < 1 + exp b := by sorry
+  have h₀ : 0 < 1 + exp a := by linarith [exp_pos a]
+  have h₁ : 0 < 1 + exp b := by linarith [exp_pos b]
   apply (log_le_log h₀ h₁).mpr
-  sorry
+  linarith [exp_le_exp.mpr h]
 
 example : 0 ≤ a ^ 2 := by
   -- apply?
   exact sq_nonneg a
 
 example (h : a ≤ b) : c - exp b ≤ c - exp a := by
-  sorry
+  linarith [exp_le_exp.mpr h]
 
 example : 2 * a * b ≤ a ^ 2 + b ^ 2 := by
   have h : 0 ≤ a ^ 2 - 2 * a * b + b ^ 2
@@ -124,7 +129,22 @@ example : 2 * a * b ≤ a ^ 2 + b ^ 2 := by
   linarith
 
 example : |a * b| ≤ (a ^ 2 + b ^ 2) / 2 := by
-  sorry
+  apply le_trans
+  have h:  |a * b| <= |a| * |b|  := by
+    apply le_iff_lt_or_eq.mpr
+    apply Or.inr
+    apply abs_mul
+  apply h
+  apply le_trans _
+  have h: (|a| ^ 2 + |b| ^ 2) / 2 <= (a ^ 2 + b ^ 2) / 2 := by
+    apply le_iff_lt_or_eq.mpr (Or.inr _)
+    repeat rw [pow_two]
+    repeat rw [abs_mul_abs_self]
+  apply h
+  have h : 0 <= (|a| ^ 2 + |b| ^ 2) - (2 * |a| * |b|) := calc
+     (|a| ^ 2 + |b| ^ 2) - (2 * |a| * |b|)  = (|a| - |b|) ^2 := by ring
+      _ >= 0 := by apply pow_two_nonneg
+  · linarith [h]
+
 
 #check abs_le'.mpr
-

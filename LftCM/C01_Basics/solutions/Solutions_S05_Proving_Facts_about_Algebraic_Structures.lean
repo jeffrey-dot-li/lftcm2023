@@ -49,6 +49,8 @@ example : x ⊔ y ⊔ z = x ⊔ (y ⊔ z) := by
         apply @le_sup_left _ _ y z
         apply le_sup_right
     apply le_trans
+    -- apply le_sup_right
+    -- apply @le_sup_right _ _ y z
     apply @le_sup_right _ _ y z
     apply le_sup_right
   apply sup_le
@@ -131,4 +133,3 @@ example (x y : X) : 0 ≤ dist x y :=by
   linarith [dist_comm x y]
 
 end
-
