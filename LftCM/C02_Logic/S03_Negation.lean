@@ -32,11 +32,24 @@ example (h : ∀ a, ∃ x, f x > a) : ¬FnHasUb f := by
   have : f x ≤ a := fnuba x
   linarith
 
-example (h : ∀ a, ∃ x, f x < a) : ¬FnHasLb f :=
-  sorry
+example (h : ∀ a, ∃ x, f x < a) : ¬FnHasLb f := by
+  intro h'
+  obtain ⟨b , fgeb⟩ := h'
+  obtain ⟨c, fcltb⟩ := h b
+  obtain fcgeb := fgeb c
+  obtain k := not_lt_of_ge fcgeb
+  linarith
 
-example : ¬FnHasUb fun x ↦ x :=
-  sorry
+
+example : ¬FnHasUb fun x ↦ x := by
+  intro h'
+  obtain ⟨ a, fuba⟩ := h'
+  obtain k := fuba (a +1)
+  have : a + 1 <= a := by apply k
+  linarith
+
+
+
 
 #check (not_le_of_gt : a > b → ¬a ≤ b)
 #check (not_lt_of_ge : a ≥ b → ¬a < b)
@@ -44,17 +57,48 @@ example : ¬FnHasUb fun x ↦ x :=
 #check (le_of_not_gt : ¬a > b → a ≤ b)
 
 example (h : Monotone f) (h' : f a < f b) : a < b := by
-  sorry
+
+  -- obtain h := mt h
+  have : b <= a → f (b) <= f (a) := by apply h
+  obtain k := mt this
+  apply lt_of_not_ge
+  apply k
+  apply not_le_of_gt
+  apply h'
+
+
+
+
 
 example (h : a ≤ b) (h' : f b < f a) : ¬Monotone f := by
-  sorry
+  intro monof
+  obtain noth':= monof h
+  obtain noth' :=not_lt_of_ge noth'
+  exact absurd h' noth'
+
 
 example : ¬∀ {f : ℝ → ℝ}, Monotone f → ∀ {a b}, f a ≤ f b → a ≤ b := by
   intro h
   let f := fun x : ℝ ↦ (0 : ℝ)
-  have monof : Monotone f := by sorry
-  have h' : f 1 ≤ f 0 := le_refl _
-  sorry
+  have monof : Monotone f := by
+    intro a b k
+    calc f a = 0 := by dsimp
+    _ <= 0 := by linarith
+    _ = f b := by dsimp
+
+  have h' : f (1 : ℝ)  ≤ f (0 : ℝ) := le_refl _
+
+  -- have h1: f 1 <= f 0 → 1 <= 0 := h monof
+  -- obtain k :=  h1 h'
+  -- For some reason this one doesn't work because of metavariable resolution:
+  obtain k := h monof h'
+
+  -- But this will work if you explicitly give type arguments
+  obtain k : 1 <= 0 := h monof h'
+  linarith
+
+
+
 
 example (x : ℝ) (h : ∀ ε > 0, x < ε) : x ≤ 0 := by
   sorry
@@ -136,4 +180,3 @@ example (h : 0 < 0) : a > 37 := by
   contradiction
 
 end
-

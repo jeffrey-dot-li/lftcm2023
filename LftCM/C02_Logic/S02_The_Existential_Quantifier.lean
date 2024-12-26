@@ -6,6 +6,7 @@ set_option autoImplicit true
 namespace C03S02
 
 example : ∃ x : ℝ, 2 < x ∧ x < 3 := by
+
   use 5 / 2
   norm_num
 
@@ -52,10 +53,25 @@ example (ubf : FnHasUb f) (ubg : FnHasUb g) : FnHasUb fun x ↦ f x + g x := by
   apply fnUb_add ubfa ubgb
 
 example (lbf : FnHasLb f) (lbg : FnHasLb g) : FnHasLb fun x ↦ f x + g x := by
-  sorry
+  rcases lbf with ⟨a, lbfa⟩
+  rcases lbg with ⟨b, lbgb⟩
+  use a + b
+  have h: ∀ x, f (x) + g (x) >= a + b := by
+    intro x
+    apply add_le_add
+    apply lbfa
+    apply lbgb
+  apply h
+
 
 example {c : ℝ} (ubf : FnHasUb f) (h : c ≥ 0) : FnHasUb fun x ↦ c * f x := by
-  sorry
+  rcases ubf with ⟨a, ubfa⟩
+  use c * a
+  rw [FnUb]
+  intro x
+  apply  mul_le_mul_of_nonneg_left
+  apply ubfa
+  apply h
 
 example : FnHasUb f → FnHasUb g → FnHasUb fun x ↦ f x + g x := by
   rintro ⟨a, ubfa⟩ ⟨b, ubgb⟩
@@ -129,7 +145,13 @@ example (divab : a ∣ b) (divbc : b ∣ c) : a ∣ c := by
   use d * e; ring
 
 example (divab : a ∣ b) (divac : a ∣ c) : a ∣ b + c := by
-  sorry
+  obtain ⟨d, beq⟩ := divab
+  obtain ⟨e, ceq⟩ := divac
+  use d + e
+  rw [beq, ceq]
+  ring
+
+
 
 end
 
@@ -143,7 +165,15 @@ example {c : ℝ} : Surjective fun x ↦ x + c := by
   dsimp; ring
 
 example {c : ℝ} (h : c ≠ 0) : Surjective fun x ↦ c * x := by
-  sorry
+  intro y
+  use y /c
+  dsimp
+  ring
+  rw [← mul_comm]
+  ring
+  have k : c * c⁻¹  =1 := by apply mul_inv_cancel h
+  rw [k]
+  ring
 
 example (x y : ℝ) (h : x - y ≠ 0) : (x ^ 2 - y ^ 2) / (x - y) = x + y := by
   field_simp [h]
@@ -163,6 +193,12 @@ variable {α : Type*} {β : Type*} {γ : Type*}
 variable {g : β → γ} {f : α → β}
 
 example (surjg : Surjective g) (surjf : Surjective f) : Surjective fun x ↦ g (f x) := by
-  sorry
+  intro c
+  obtain ⟨b, gbc⟩ := surjg c
+  obtain ⟨a, fab⟩ := surjf b
+  use a
+  rw [← gbc, ← fab]
+
+
 
 end
