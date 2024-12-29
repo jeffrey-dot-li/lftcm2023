@@ -26,16 +26,46 @@ theorem convergesTo_const (a : ℝ) : ConvergesTo (fun x : ℕ ↦ a) a := by
   rw [sub_self, abs_zero]
   apply εpos
 
+
+
+theorem abs_add (x y : ℝ) : |x + y| ≤ |x| + |y| := by
+  rcases le_or_gt 0 (x + y) with h | h
+  · rw [abs_of_nonneg h]
+    calc x + y <= x + |y| := by apply add_le_add_left (le_abs_self y)
+    _ <= |x| + |y| := by apply add_le_add_right (le_abs_self x)
+  · rw [abs_of_neg h]
+    calc -(x + y) <= -x + -y := by linarith
+    _ <= -x + |y| := by apply add_le_add_left (neg_le_abs_self y)
+    _ <= |x| + |y| := by apply add_le_add_right (neg_le_abs_self x)
+
+
+
 theorem convergesTo_add {s t : ℕ → ℝ} {a b : ℝ}
       (cs : ConvergesTo s a) (ct : ConvergesTo t b) :
     ConvergesTo (fun n ↦ s n + t n) (a + b) := by
   intro ε εpos
   dsimp -- this line is not needed but cleans up the goal a bit.
-  have ε2pos : 0 < ε / 2 := by linarith
-  rcases cs (ε / 2) ε2pos with ⟨Ns, hs⟩
-  rcases ct (ε / 2) ε2pos with ⟨Nt, ht⟩
-  use max Ns Nt
-  sorry
+  have halfepos: ε /2 > 0 := by linarith
+  obtain ⟨n1, c1⟩  := cs (ε/2) halfepos
+  obtain ⟨n2, c2⟩  := ct (ε/2) halfepos
+  use max n1 n2
+  intro n ngt
+  have nge1 : n >= n1 := by apply le_trans (le_max_left n1 n2) ngt
+  have nge2 : n >= n2 := by apply le_trans (le_max_right n1 n2) ngt
+  obtain k :=
+    calc |s n + t n - (a + b)| = |s n - a + (t n - b)| := by
+      {
+        apply congr_arg abs
+        linarith
+      }
+      _ <= |s n - a| + |t n - b| := by apply abs_add
+      _ < ε/2 + |t n - b| := by apply add_lt_add_right (c1 n nge1)
+      _ < ε/2 + ε/2 := by apply add_lt_add_left (c2 n nge2)
+      _ = ε := by linarith
+  exact k
+
+
+
 
 theorem convergesTo_mul_const {s : ℕ → ℝ} {a : ℝ} (c : ℝ) (cs : ConvergesTo s a) :
     ConvergesTo (fun n ↦ c * s n) (c * a) := by
@@ -100,4 +130,3 @@ def ConvergesTo' (s : α → ℝ) (a : ℝ) :=
   ∀ ε > 0, ∃ N, ∀ n ≥ N, |s n - a| < ε
 
 end
-

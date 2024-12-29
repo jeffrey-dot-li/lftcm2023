@@ -101,7 +101,10 @@ example : ¬∀ {f : ℝ → ℝ}, Monotone f → ∀ {a b}, f a ≤ f b → a �
 
 
 example (x : ℝ) (h : ∀ ε > 0, x < ε) : x ≤ 0 := by
-  sorry
+  apply not_lt.mp
+  intro h'
+  obtain k := h x h'
+  linarith
 
 end
 
@@ -109,16 +112,36 @@ section
 variable {α : Type*} (P : α → Prop) (Q : Prop)
 
 example (h : ¬∃ x, P x) : ∀ x, ¬P x := by
-  sorry
+  intro x
+  intro Px
+  have : ∃ x, P x := by
+    use x
+  exact absurd this h
+
 
 example (h : ∀ x, ¬P x) : ¬∃ x, P x := by
-  sorry
+  intro h'
+  obtain ⟨x, px⟩ := h'
+  obtain notpx := h x
+  exact absurd px notpx
+
+
 
 example (h : ¬∀ x, P x) : ∃ x, ¬P x := by
-  sorry
+  by_contra h'
+  apply h
+  intro x
+  by_contra h''
+  have : ∃ x, ¬ P x := by use x
+  exact absurd this h'
 
 example (h : ∃ x, ¬P x) : ¬∀ x, P x := by
-  sorry
+  intro h'
+  obtain ⟨x, notpx⟩ := h
+  obtain px := h' x
+  exact absurd px notpx
+
+
 
 example (h : ¬∀ x, P x) : ∃ x, ¬P x := by
   by_contra h'
@@ -129,10 +152,13 @@ example (h : ¬∀ x, P x) : ∃ x, ¬P x := by
   exact h' ⟨x, h''⟩
 
 example (h : ¬¬Q) : Q := by
-  sorry
+  by_contra notq
+  exact absurd notq h
+
 
 example (h : Q) : ¬¬Q := by
-  sorry
+  intro notq
+  exact absurd h notq
 
 end
 
@@ -140,7 +166,12 @@ section
 variable (f : ℝ → ℝ)
 
 example (h : ¬FnHasUb f) : ∀ a, ∃ x, f x > a := by
-  sorry
+  dsimp only [FnHasUb, FnUb] at h
+  by_contra h'
+  push_neg at h
+  exact absurd h h'
+
+
 
 example (h : ¬∀ a, ∃ x, f x > a) : FnHasUb f := by
   push_neg at h
@@ -152,7 +183,9 @@ example (h : ¬FnHasUb f) : ∀ a, ∃ x, f x > a := by
   exact h
 
 example (h : ¬Monotone f) : ∃ x y, x ≤ y ∧ f y < f x := by
-  sorry
+  contrapose! h
+  exact h
+
 
 example (h : ¬FnHasUb f) : ∀ a, ∃ x, f x > a := by
   contrapose! h
